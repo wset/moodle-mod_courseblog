@@ -435,3 +435,8 @@ function courseblog_delete_record($deleteid, $courseblog, $courseid, $cmid) {
     }
     return false;
 }
+
+function courseblog_comment_validate($comment_param) {
+    return true;
+}
+

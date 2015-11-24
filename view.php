@@ -270,13 +270,19 @@ if ($showactivity) {
     /*    $sortcontent = $DB->sql_compare_text('p.' . $sortfield->get_sort_field());
         $sortcontentfull = $sortfield->get_sort_sql($sortcontent);
     */
+        if (!has_capability('moodle/blog:viewdrafts', $context)) {
+            $draftsql = " AND p.id NOT IN ( select id from {post} where publishstate = 'draft' AND userid != " . $USER->id .") "; 
+        } else {
+            $draftsql = "";
+        }
         $what = ' cbe.id, p.subject, p.summary, p.content, p.format, p.summaryformat, p.attachment, cbe.userid, ' . $namefields . ',
                 ' . 'p.subject' . ' AS sortorder ';
         $count = ' COUNT(DISTINCT cbe.id) ';
         $tables = '{post} p, {courseblog_entries} cbe, {user} u ';
         $where =  'WHERE p.id = cbe.blogid
                      AND cbe.courseblogid = :courseblogid
-                     AND cbe.userid = u.id ';
+                     AND cbe.userid = u.id
+                     ' . $draftsql;
         $params['courseblogid'] = $courseblog->id;
         $params['sort'] = $sort;
         $sortorder = ' ORDER BY cbe.id DESC ';
