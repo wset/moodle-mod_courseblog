@@ -217,6 +217,65 @@ function courseblog_user_outline($course, $user, $mod, $courseblog) {
  * @return void, is supposed to echp directly
  */
 function courseblog_user_complete($course, $user, $mod, $courseblog) {
+    global $DB, $CFG, $OUTPUT, $PAGE;
+
+    require_once("$CFG->libdir/gradelib.php");
+    $grades = grade_get_grades($course->id, 'mod', 'courseblog', $courseblog->id, $user->id);
+    if (!empty($grades->items[0]->grades)) {
+        $grade = reset($grades->items[0]->grades);
+        if ($grade != '-') {
+            echo $OUTPUT->container(get_string('grade').': '.$grade->str_long_grade);
+            if ($grade->str_feedback) {
+                echo $OUTPUT->container(get_string('feedback').': '.$grade->str_feedback);
+            }
+        }
+    }
+
+    $context = context_module::instance($mod->id);
+
+    if (!has_capability('moodle/blog:viewdrafts', $context)) {
+        $draftsql = " AND p.id NOT IN ( select id from {post} where publishstate = 'draft' AND userid != " . $USER->id .") ";
+    } else {
+        $draftsql = "";
+    }
+
+    // Get user posts.
+    $params = array(
+        'userid' => $user->id,
+        'courseblog' => $courseblog->id
+    );
+
+    $vsql = "SELECT cbe.id
+        FROM {courseblog_entries} cbe
+            JOIN {post} p ON p.id = cbe.blogid
+        WHERE cbe.userid = :userid
+            AND cbe.courseblogid = :courseblog
+            $draftsql
+        ORDER BY p.created ASC";
+
+    $posts = $DB->get_records_sql($vsql, $params);
+
+    if (!empty($posts)) {
+        require_once($CFG->dirroot . '/blog/locallib.php');
+        require_once($CFG->dirroot .'/comment/lib.php');
+        comment::init();
+        foreach ($posts as $post) {
+            $entryrecord = $DB->get_record('courseblog_entries', array('id' => $post->id));
+            if ($blog = $DB->get_record('post', array('id' => $entryrecord->blogid))) {
+                $blogoutput = $PAGE->get_renderer('blog');
+                $blogentry = new blog_entry(null, $blog);
+
+                // Get the required blog entry data to render it.
+                $blogentry->prepare_render();
+                echo $blogoutput->render($blogentry);
+            } else {
+                // The associated blog entry was removed elsewhere.
+                $DB->delete_records('courseblog_entries', array('id' => $post->id));
+            }
+        }
+    } else {
+        echo "<p>".get_string("noposts", "courseblog")."</p>";
+    }
 }
 
 /**

@@ -45,6 +45,7 @@ $string['courseblog'] = 'blogtask';
 $string['editentry'] = 'Add new entry';
 $string['myblogs'] = 'My entries';
 $string['norecords'] = 'There are no blog entries associated yet.';
+$string['noposts'] = 'No posts';
 $string['numhiddenposts'] = '{$a} hidden';
 $string['numposts'] = '{$a} posts';
 $string['owner'] = 'Owner';
