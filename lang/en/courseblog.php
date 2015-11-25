@@ -45,6 +45,8 @@ $string['courseblog'] = 'blogtask';
 $string['editentry'] = 'Add new entry';
 $string['myblogs'] = 'My entries';
 $string['norecords'] = 'There are no blog entries associated yet.';
+$string['numhiddenposts'] = '{$a} hidden';
+$string['numposts'] = '{$a} posts';
 $string['owner'] = 'Owner';
 $string['pluginadministration'] = 'Blog task administration';
 $string['pluginname'] = 'Blog Task';
@@ -54,4 +56,4 @@ $string['subject'] = 'Subject';
 $string['viewallcourseentries'] = 'View all entries for this course';
 $string['viewalluserentries'] = 'View all my entries';
 
-    
+
