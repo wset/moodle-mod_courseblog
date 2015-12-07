@@ -73,7 +73,7 @@
     require_course_login($course, true, $cm);
 
     $context = context_module::instance($cm->id);
-    require_capability('mod/courseblog:viewentry', $context);
+    require_capability('mod/courseblog:view', $context);
 
 /// Check further parameters that set browsing preferences
     if (!isset($SESSION->courseblogprefs)) {
