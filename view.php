@@ -153,6 +153,10 @@
         $PAGE->set_button($OUTPUT->single_button($url, $strediting));
     }
 
+    // Mark as viewed
+    $completion = new completion_info($course);
+    $completion->set_module_viewed($cm);
+    
     $PAGE->set_title($title);
     $PAGE->set_heading($course->fullname);
 
