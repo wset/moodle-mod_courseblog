@@ -51,7 +51,7 @@ function courseblog_supports($feature) {
         case FEATURE_GROUPINGS:                 return true;
         case FEATURE_MOD_INTRO:                 return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:   return true;
-        case FEATURE_COMPLETION_HAS_RULES:      return false;
+        case FEATURE_COMPLETION_HAS_RULES:      return true;
         case FEATURE_GRADE_HAS_GRADE:           return false;
         case FEATURE_GRADE_OUTCOMES:            return false;
         case FEATURE_BACKUP_MOODLE2:            return true;
@@ -558,5 +558,39 @@ function courseblog_delete_record($deleteid, $courseblog, $courseid, $cmid) {
 
 function courseblog_comment_validate($comment_param) {
     return true;
+}
+
+/**
+ * Obtains the automatic completion state for this forum based on any conditions
+ * in forum settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function courseblog_get_completion_state($course,$cm,$userid,$type) {
+    global $CFG,$DB;
+
+    // Get forum details
+    if(!($courseblog=$DB->get_record('courseblog',array('id'=>$cm->instance)))) {
+        throw new Exception("Can't find courseblog {$cm->instance}");
+    }
+
+    // If completion option is enabled, evaluate it and return true/false 
+    if($courseblog->completionposts) {
+        return $courseblog->completionposts <= $DB->get_field_sql("
+SELECT 
+    COUNT(1) 
+FROM {courseblog_entries} cbe
+    JOIN {post} p ON p.id = cbe.blogid
+WHERE cbe.userid = :userid
+    AND cbe.courseblogid = :courseblog",
+            array('userid'=>$userid,'courseblog'=>$courseblog->id));
+    } else {
+        // Completion option is not enabled so just return $type
+        return $type;
+    }
 }
 

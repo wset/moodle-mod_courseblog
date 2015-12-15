@@ -77,21 +77,16 @@ class mod_courseblog_mod_form extends moodleform_mod {
      * @return array Array of string IDs of added items, empty array if none
      */
     public function add_completion_rules() {
-        $mform = $this->_form;
-        $items = array();
+        $mform =& $this->_form;
 
-        $group = array();
-        $group[] = $mform->createElement('advcheckbox', 'completionpass', null, get_string('completionpass', 'quiz'),
-                array('group' => 'cpass'));
+        $group=array();
+        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled', '', get_string('completionposts','courseblog'));
+        $group[] =& $mform->createElement('text', 'completionposts', '', array('size'=>3));
+        $mform->setType('completionposts',PARAM_INT);
+        $mform->addGroup($group, 'completionpostsgroup', get_string('completionpostsgroup','courseblog'), array(' '), false);
+        $mform->disabledIf('completionposts','completionpostsenabled','notchecked');
 
-        $group[] = $mform->createElement('advcheckbox', 'completionattemptsexhausted', null,
-                get_string('completionattemptsexhausted', 'quiz'),
-                array('group' => 'cattempts'));
-        $mform->disabledIf('completionattemptsexhausted', 'completionpass', 'notchecked');
-        $mform->addGroup($group, 'completionpassgroup', get_string('completionpass', 'quiz'), ' &nbsp; ', false);
-        $mform->addHelpButton('completionpassgroup', 'completionpass', 'quiz');
-        $items[] = 'completionpassgroup';
-        return $items;
+        return array('completionpostsgroup');
     }
 
     /**
@@ -101,7 +96,34 @@ class mod_courseblog_mod_form extends moodleform_mod {
      * @return bool True if one or more rules is enabled, false if none are.
      */
     public function completion_rule_enabled($data) {
-        return !empty($data['completionattemptsexhausted']) || !empty($data['completionpass']);
+        return (!empty($data['completionpostsenabled']) && $data['completionposts']!=0);
     }
 
+    function get_data() {
+        $data = parent::get_data();
+        if (!$data) {
+            return $data;
+        }
+        if (!empty($data->completionunlocked)) {
+            // Turn off completion settings if the checkboxes aren't ticked
+            $autocompletion = !empty($data->completion) && $data->completion==COMPLETION_TRACKING_AUTOMATIC;
+            if (empty($data->completionpostsenabled) || !$autocompletion) {
+            $data->completionposts = 0;
+            }
+        }
+        return $data;
+    }
+    
+    function data_preprocessing(&$default_values){
+    // [Existing code, not shown]
+
+    // Set up the completion checkboxes which aren't part of standard data.
+    // We also make the default value (if you turn on the checkbox) for those
+    // numbers to be 1, this will not apply unless checkbox is ticked.
+        $default_values['completionpostsenabled']=
+                !empty($default_values['completionposts']) ? 1 : 0;
+        if(empty($default_values['completionposts'])) {
+            $default_values['completionposts']=1;
+        }
+    }
 }

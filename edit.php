@@ -130,6 +130,11 @@ if (!$new) {
             $entry['groupid'] = $currentgroup;
             if (!$DB->get_record('courseblog_entries', $entry)) {
                 $DB->insert_record('courseblog_entries', $entry);
+                // Update completion state
+                $completion=new completion_info($course);
+                if($completion->is_enabled($cm) && $courseblog->completionposts) {
+                    $completion->update_state($cm,COMPLETION_COMPLETE);
+                }
             }
         }
         redirect(new moodle_url('/mod/courseblog/view.php', array('id' => $id, 'd' => $courseblog->id)));
@@ -195,6 +200,11 @@ if (!$new) {
         $newentry['groupid'] = $currentgroup;
         if (!$DB->get_record('courseblog_entries', $newentry)) {
             $DB->insert_record('courseblog_entries', $newentry);
+            // Update completion state
+            $completion=new completion_info($course);
+            if($completion->is_enabled($cm) && $courseblog->completionposts) {
+                $completion->update_state($cm,COMPLETION_COMPLETE);
+            }
         }
         redirect(new moodle_url('/mod/courseblog/view.php', array('id' => $id, 'd' => $courseblog->id)));
     }
