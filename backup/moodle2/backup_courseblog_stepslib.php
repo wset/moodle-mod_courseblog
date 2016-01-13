@@ -38,7 +38,7 @@ class backup_courseblog_activity_structure_step extends backup_activity_structur
 
         // Define each element separated
         $courseblog = new backup_nested_element('courseblog', array('id'), array(
-            'name', 'intro', 'introformat', 'comments'));
+            'name', 'intro', 'introformat', 'completionposts'));
 
         $entries = new backup_nested_element('entries');
 
