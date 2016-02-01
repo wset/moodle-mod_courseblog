@@ -1,4 +1,4 @@
-<?php
+Owen<?php
 
 // This file is part of Moodle - http://moodle.org/
 //
@@ -52,8 +52,8 @@ function courseblog_supports($feature) {
         case FEATURE_MOD_INTRO:                 return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:   return true;
         case FEATURE_COMPLETION_HAS_RULES:      return true;
-        case FEATURE_GRADE_HAS_GRADE:           return false;
-        case FEATURE_GRADE_OUTCOMES:            return false;
+        case FEATURE_GRADE_HAS_GRADE:           return null;
+        case FEATURE_GRADE_OUTCOMES:            return null;
         case FEATURE_BACKUP_MOODLE2:            return true;
 
         default:                        return null;
@@ -338,92 +338,6 @@ function courseblog_get_extra_capabilities() {
     return array();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Gradebook API                                                              //
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Is a given scale used by the instance of courseblog?
- *
- * This function returns if a scale is being used by one courseblog
- * if it has support for grading and scales. Commented code should be
- * modified if necessary. See forum, glossary or journal modules
- * as reference.
- *
- * @param int $courseblogid ID of an instance of this module
- * @return bool true if the scale is used by the given courseblog instance
- */
-function courseblog_scale_used($courseblogid, $scaleid) {
-    global $DB;
-
-    /** @example */
-    if ($scaleid and $DB->record_exists('courseblog', array('id' => $courseblogid, 'grade' => -$scaleid))) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/**
- * Checks if scale is being used by any instance of courseblog.
- *
- * This is used to find out if scale used anywhere.
- *
- * @param $scaleid int
- * @return boolean true if the scale is used by any courseblog instance
- */
-function courseblog_scale_used_anywhere($scaleid) {
-    global $DB;
-
-    /** @example */
-    if ($scaleid and $DB->record_exists('courseblog', array('grade' => -$scaleid))) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/**
- * Creates or updates grade item for the give courseblog instance
- *
- * Needed by grade_update_mod_grades() in lib/gradelib.php
- *
- * @param stdClass $courseblog instance object with extra cmidnumber and modname property
- * @param mixed optional array/object of grade(s); 'reset' means reset grades in gradebook
- * @return void
- */
-function courseblog_grade_item_update(stdClass $courseblog, $grades=null) {
-    global $CFG;
-    require_once($CFG->libdir.'/gradelib.php');
-
-    /** @example */
-    $item = array();
-    $item['itemname'] = clean_param($courseblog->name, PARAM_NOTAGS);
-    $item['gradetype'] = GRADE_TYPE_VALUE;
-    $item['grademax']  = $courseblog->grade;
-    $item['grademin']  = 0;
-
-    grade_update('mod/courseblog', $courseblog->course, 'mod', 'courseblog', $courseblog->id, 0, null, $item);
-}
-
-/**
- * Update courseblog grades in the gradebook
- *
- * Needed by grade_update_mod_grades() in lib/gradelib.php
- *
- * @param stdClass $courseblog instance object with extra cmidnumber and modname property
- * @param int $userid update grade of specific user only, 0 means all participants
- * @return void
- */
-function courseblog_update_grades(stdClass $courseblog, $userid = 0) {
-    global $CFG, $DB;
-    require_once($CFG->libdir.'/gradelib.php');
-
-    /** @example */
-    $grades = array(); // populate array of grade objects indexed by userid
-
-    grade_update('mod/courseblog', $courseblog->course, 'mod', 'courseblog', $courseblog->id, 0, $grades);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // File API                                                                   //
